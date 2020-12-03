@@ -16,7 +16,7 @@ public class BatchCrawler {
 	private static final Logger log = LoggerFactory.getLogger(BatchCrawler.class);
 
 	@Autowired
-	private TelegramService cacheService;
+	private TelegramService telegramService;
 
 	@Autowired
 	private UpdateService updateService;
@@ -24,7 +24,13 @@ public class BatchCrawler {
 	@Scheduled(fixedRateString = "100")
 	public void sendTelegram()
 	{
-		cacheService.sendAllTelegram();
+		telegramService.sendAllTelegram();
+	}
+
+	@Scheduled(fixedRateString = "15000")
+	public void CheckServiceDown()
+	{
+		telegramService.checkServiceDown();
 	}
 
 }

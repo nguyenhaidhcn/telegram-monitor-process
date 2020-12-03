@@ -13,6 +13,8 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class TelegramService {
@@ -34,6 +36,9 @@ public class TelegramService {
 	@Value("${telegram.useName}")
 	private String telegramUseName;
 
+	@Value("${service}")
+	private String serviceStr;
+
 
 	@Value("${telegram.chatId}")
 	private long chatId;
@@ -44,9 +49,13 @@ public class TelegramService {
 	@Value("${telegram.chatId.error}")
 	private long chatIdError;
 
-
+	private String ServiceList[];
 
     public List<TelegramMsg> telegramMsgs = new ArrayList<>();
+
+    public Map<String, TelegramMsg> mapPingService = new ConcurrentHashMap<>();
+
+
 
     private TelegramBot telegramBot;
 
@@ -96,6 +105,28 @@ public class TelegramService {
 //
 //	}
 
+
+	public void checkServiceDown()
+	{
+		if(ServiceList == null)
+		{
+			ServiceList = serviceStr.split(",");
+			return;
+		}
+		for(String service:ServiceList)
+		{
+			TelegramMsg telegramMsg = mapPingService.get(service);
+			if(telegramMsg == null)
+			{
+				sendToTelegram("Service was down " + service, null );
+			}
+			else if((telegramMsg.time + 10* 1000) < System.currentTimeMillis())
+			{
+				sendToTelegram("Service was down " + service, null );
+			}
+		}
+	}
+
 	public  void sendToTelegram(String msg, Long id) {
 
 		if(id == null || id == 0)
@@ -123,17 +154,26 @@ public class TelegramService {
 		for(TelegramMsg telegramMsg:telegramMsgs)
 		{
 
+			if(telegramMsg.msg != null)
+			{
+				if(telegramMsg.msg.equals("ping"))
+				{
+					mapPingService.put(telegramMsg.appName, telegramMsg);
+					continue;
+				}
+			}
+
 			if(msg.length()>3000)
 			{
 				sent(msg, chatId);
 				msg ="";
 			}
-			msg = msg + telegramMsg.msg + "\n \n";
+			msg = msg  + telegramMsg.msg + "\n \n";
 
 		}
 
-
-		sent(msg, chatId);
+		if(msg.length() > 0)
+			sent(msg, chatId);
 
 		telegramMsgs.clear();
 

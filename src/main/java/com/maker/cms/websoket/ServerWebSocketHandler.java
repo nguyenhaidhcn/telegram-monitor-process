@@ -2,6 +2,7 @@ package com.maker.cms.websoket;
 
 import com.google.gson.Gson;
 import com.maker.cms.entity.TelegramMsg;
+import com.maker.cms.service.TelegramService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.java_websocket.WebSocket;
@@ -31,6 +32,8 @@ public class ServerWebSocketHandler extends WebSocketServer {
     private Map<String, String> lastRates = new HashMap<>();
 
 
+    public TelegramService telegramService;
+    public String token;
 
     @Override
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
@@ -58,17 +61,18 @@ public class ServerWebSocketHandler extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket conn, String message) {
-
         logger.info("onMessage:" + message);
         try {
 
             TelegramMsg telegramMsg = gson.fromJson(message, TelegramMsg.class);
-            if(telegramMsg == null || telegramMsg.token == null || !telegramMsg.token.equals("387sdnkf4sdf"))
+            if(telegramMsg == null || telegramMsg.token == null || !telegramMsg.token.equals(token))
             {
                 logger.info("wrong msg, close connection ");
                 conn.close();
                 return;
             }
+            telegramService.telegramMsgs.add(telegramMsg);
+
 
 
         } catch (Exception e) {
