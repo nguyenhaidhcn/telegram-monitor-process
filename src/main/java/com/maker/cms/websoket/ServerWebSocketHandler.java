@@ -1,6 +1,7 @@
 package com.maker.cms.websoket;
 
 import com.google.gson.Gson;
+import com.maker.cms.entity.TelegramMsg;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.java_websocket.WebSocket;
@@ -18,11 +19,13 @@ public class ServerWebSocketHandler extends WebSocketServer {
 
     private Gson gson = new Gson();
 
-    private Set<WebSocket> conns;
+    private Set<WebSocket> conns_waitForlogin;
+    private Set<WebSocket> conns_login;
     private final static Logger logger = LogManager.getLogger(ServerWebSocketHandler.class);
     public ServerWebSocketHandler(int port) {
         super(new InetSocketAddress(port));
-        conns = new HashSet<>();
+        conns_waitForlogin = new HashSet<>();
+        conns_login = new HashSet<>();
     }
 
     private Map<String, String> lastRates = new HashMap<>();
@@ -32,7 +35,7 @@ public class ServerWebSocketHandler extends WebSocketServer {
     @Override
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
         try {
-            conns.add(webSocket);
+            conns_waitForlogin.add(webSocket);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -42,7 +45,12 @@ public class ServerWebSocketHandler extends WebSocketServer {
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        conns.remove(conn);
+
+        if(conns_waitForlogin.contains(conn))
+            conns_waitForlogin.remove(conn);
+
+        if(conns_login.contains(conn))
+            conns_login.remove(conn);
 
         logger.info("Connection closed to: " + conn.getRemoteSocketAddress().getHostString());
         System.out.println("Closed connection to " + conn.getRemoteSocketAddress().getAddress().getHostAddress());
@@ -51,11 +59,20 @@ public class ServerWebSocketHandler extends WebSocketServer {
     @Override
     public void onMessage(WebSocket conn, String message) {
 
-//        conn.send("onMessage");
+        logger.info("onMessage:" + message);
         try {
+
+            TelegramMsg telegramMsg = gson.fromJson(message, TelegramMsg.class);
+            if(telegramMsg == null || telegramMsg.token == null || !telegramMsg.token.equals("387sdnkf4sdf"))
+            {
+                logger.info("wrong msg, close connection ");
+                conn.close();
+                return;
+            }
 
 
         } catch (Exception e) {
+            conn.close();
             e.printStackTrace();
 
             logger.error("Wrong message format.");
@@ -66,7 +83,12 @@ public class ServerWebSocketHandler extends WebSocketServer {
     public void onError(WebSocket conn, Exception ex) {
 
         if (conn != null) {
-            conns.remove(conn);
+            if(conns_waitForlogin.contains(conn))
+                conns_waitForlogin.remove(conn);
+
+            if(conns_login.contains(conn))
+                conns_login.remove(conn);
+
             System.out.println("ERROR from " + conn.getRemoteSocketAddress().getAddress().getHostAddress());
         }
     }
@@ -77,8 +99,14 @@ public class ServerWebSocketHandler extends WebSocketServer {
     }
 
     public void broadcast(String message) {
-            for (WebSocket sock : conns) {
+            for (WebSocket sock : conns_waitForlogin) {
                 sock.send(message);
             }
+    }
+
+    private boolean checkLogin(WebSocket conn, String message)
+    {
+        this.removeConnection(conn);
+        return true;
     }
 }
