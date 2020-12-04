@@ -71,6 +71,14 @@ public class ServerWebSocketHandler extends WebSocketServer {
                 conn.close();
                 return;
             }
+
+//            if(telegramMsg.appName == null)
+//            {
+//                telegramMsg.appName ="";
+//            }
+//
+//            telegramMsg.appName = telegramMsg.appName + ":" +conn.getRemoteSocketAddress().getHostString();
+            telegramMsg.ip=conn.getRemoteSocketAddress().getHostString();
             telegramService.telegramMsgs.add(telegramMsg);
 
 

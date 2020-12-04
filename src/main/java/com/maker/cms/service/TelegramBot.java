@@ -3,6 +3,7 @@ package com.maker.cms.service;
 import com.google.gson.Gson;
 import com.maker.cms.entity.Cmd;
 import com.maker.cms.entity.TeleCmd;
+import com.maker.cms.entity.TelegramMsg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,8 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.util.Map;
 
 
 @Component
@@ -23,6 +26,8 @@ public class TelegramBot extends TelegramLongPollingBot  {
 
 
     public Integer adminId = 0;
+
+    public TelegramService telegramService;
 
     private Gson gson = new Gson();
     private static final Logger log = LoggerFactory.getLogger(TelegramBot.class);
@@ -131,7 +136,24 @@ public class TelegramBot extends TelegramLongPollingBot  {
 //                debug("debug")
         switch (teleCmd.cmd)
         {
-            case turnon:
+            case report:
+            {
+
+                String msg ="Process status: \n";
+
+                for (Map.Entry<String, TelegramMsg> entry : telegramService.mapPingService.entrySet()) {
+
+                    String status = " running";
+
+                    if(entry.getValue().time < (System.currentTimeMillis() - 5*60*1000))
+                    {
+                        status = " down";
+                    }
+                    msg = msg + entry.getValue().ip + " "+ entry.getValue().appName + " "   + status + "\n";
+                }
+
+                sent(msg, teleCmd.chatId);
+            }
 
 
             default:

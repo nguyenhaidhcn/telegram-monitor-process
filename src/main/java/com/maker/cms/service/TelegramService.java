@@ -43,6 +43,9 @@ public class TelegramService {
 	@Value("${telegram.chatId}")
 	private long chatId;
 
+	@Value("${time.out}")
+	private long timeout;
+
 	@Value("${telegram.admin}")
 	private Integer adminId;
 
@@ -76,6 +79,7 @@ public class TelegramService {
 				telegramBot.token = telegramToken;
 				telegramBot.botname = telegramUseName;
 				telegramBot.adminId =adminId;
+				telegramBot.telegramService=this;
 				telegramBotsApi.registerBot(telegramBot);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -118,11 +122,11 @@ public class TelegramService {
 			TelegramMsg telegramMsg = mapPingService.get(service);
 			if(telegramMsg == null)
 			{
-				sendToTelegram("Service was down " + service, null );
+				sendToTelegram(service + " down " , null );
 			}
-			else if((telegramMsg.time + 10* 1000) < System.currentTimeMillis())
+			else if((telegramMsg.time + timeout*1000) < System.currentTimeMillis())
 			{
-				sendToTelegram("Service was down " + service, null );
+				sendToTelegram(service + " down " , null );
 			}
 		}
 	}
@@ -167,6 +171,11 @@ public class TelegramService {
 			{
 				sent(msg, chatId);
 				msg ="";
+			}
+
+			if(telegramMsg.appName != null)
+			{
+				msg = msg + telegramMsg.ip + ":" +telegramMsg.appName + ": ";
 			}
 			msg = msg  + telegramMsg.msg + "\n \n";
 

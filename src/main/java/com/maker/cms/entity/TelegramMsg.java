@@ -8,6 +8,7 @@ public class TelegramMsg {
     public String msg;
     public String token;
     public Long time;
+    public String ip;
     public TelegramMsg() {
         time = System.currentTimeMillis();
     }
