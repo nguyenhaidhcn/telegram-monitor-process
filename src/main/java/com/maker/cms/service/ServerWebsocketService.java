@@ -31,6 +31,7 @@ public class ServerWebsocketService {
         serverWebSocketHandler.telegramService=telegramService;
         serverWebSocketHandler.token =wsToken;
         serverWebSocketHandler.start();
+        ConfigFile.load();
     }
 
     public void broadCastMsg(String msg){

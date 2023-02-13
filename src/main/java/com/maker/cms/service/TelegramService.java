@@ -139,7 +139,7 @@ public class TelegramService {
 		}
 
 		if(id == 0)
-			id = -466611253l;
+			id = chatId;
 		TelegramMsg telegramMsg = new TelegramMsg(id, msg);
 		telegramMsgs.add(telegramMsg);
 		return;

@@ -14,22 +14,28 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public  class ConfigFile {
-    static private String fileName = "config.ini";
+    static private String fileName = "license.lic";
     static private Gson gson = new Gson();
     //currency.csv
 
     static public void load()
     {
-        ConcurrentHashMap<String, ServiceLicense> stringCurrencyConcurrentHashMap = new ConcurrentHashMap<>();
+        ConcurrentHashMap<String, ConcurrentHashMap<String,ServiceLicense>> stringCurrencyConcurrentHashMap = new ConcurrentHashMap<>();
         try {
 //            String str = FileUtils.readFileToString(fileName, "utf-8");
             try(BufferedReader br = new BufferedReader(new FileReader(fileName))) {
                 for(String line; (line = br.readLine()) != null; ) {
-                    String[] parts = line.split(",");
+                    String[] parts = line.split("\\|");
                     if(parts.length <3) continue;
                     ServiceLicense serviceLicense = new ServiceLicense();
-                    if(serviceLicense.init(line) == false) continue;;
-                    stringCurrencyConcurrentHashMap.put(serviceLicense.key(), serviceLicense);
+                    if(serviceLicense.init(line) == false) continue;
+                    ConcurrentHashMap<String,ServiceLicense> list = stringCurrencyConcurrentHashMap.get(serviceLicense.ip);
+                    if(list == null)
+                    {
+                        list = new ConcurrentHashMap<>();
+                    }
+                    list.put(serviceLicense.name, serviceLicense);
+                    stringCurrencyConcurrentHashMap.put(serviceLicense.ip, list);
                     // process the line.
                 }
                 // line is not visible here.

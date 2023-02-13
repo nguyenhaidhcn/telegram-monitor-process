@@ -1,7 +1,9 @@
 package com.maker.cms.websoket;
 
 import com.google.gson.Gson;
+import com.maker.cms.entity.ServiceLicense;
 import com.maker.cms.entity.TelegramMsg;
+import com.maker.cms.service.DataCache;
 import com.maker.cms.service.TelegramService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerWebSocketHandler extends WebSocketServer {
 
@@ -43,7 +46,20 @@ public class ServerWebSocketHandler extends WebSocketServer {
             e.printStackTrace();
         }
 
+        String ip = webSocket.getRemoteSocketAddress().getHostString();
+
+        ConcurrentHashMap<String, ServiceLicense> mapService =  DataCache.serviceLicenses.get(ip);
+
+        if(mapService == null)
+        {
+            logger.info("Reject connection from: " + ip);
+            webSocket.close();
+            return;
+        }
+
         logger.info("Connection established from: " + webSocket.getRemoteSocketAddress().getHostString());
+
+
     }
 
     @Override
@@ -64,21 +80,31 @@ public class ServerWebSocketHandler extends WebSocketServer {
         logger.info("onMessage:" + message);
         try {
 
-            TelegramMsg telegramMsg = gson.fromJson(message, TelegramMsg.class);
-            if(telegramMsg == null || telegramMsg.token == null || !telegramMsg.token.equals(token))
+
+            String ip=conn.getRemoteSocketAddress().getHostString();
+
+            ServiceLicense serviceLicense = new ServiceLicense();
+            serviceLicense.ip = ip;
+            serviceLicense.decodeAppName(message);
+
+
+
+            ServiceLicense setting = DataCache.querryService(serviceLicense.ip, serviceLicense.name);
+            if(setting == null)
             {
-                logger.info("wrong msg, close connection ");
-                conn.close();
-                return;
+                setting = serviceLicense;
+                setting.expried="2000/01/01";
+                logger.info("License not accept: " + serviceLicense.ip + " " + serviceLicense.key());
             }
 
-//            if(telegramMsg.appName == null)
-//            {
-//                telegramMsg.appName ="";
-//            }
-//
-//            telegramMsg.appName = telegramMsg.appName + ":" +conn.getRemoteSocketAddress().getHostString();
-            telegramMsg.ip=conn.getRemoteSocketAddress().getHostString();
+            logger.info("License reply: "+ serviceLicense.ip + " " + serviceLicense.key());
+
+            String msg =  serviceLicense.Encode(false);
+            conn.send(msg);
+
+            TelegramMsg telegramMsg = new TelegramMsg();
+            telegramMsg.appName = serviceLicense.name;
+            telegramMsg.ip = serviceLicense.ip;
             telegramService.telegramMsgs.add(telegramMsg);
 
 
