@@ -12,7 +12,6 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,8 +40,13 @@ public class TelegramService {
 	private String serviceStr;
 
 
-	@Value("${telegram.chatId}")
-	private long chatId;
+
+	@Value("${telegram.chatId.CopyTrade}")
+	private long chatIdCopyTrade;
+
+
+	@Value("${telegram.chatId.gateway}")
+	private long chatIdGateway;
 
 	@Value("${time.out}")
 	private long timeout;
@@ -86,7 +90,7 @@ public class TelegramService {
 				e.printStackTrace();
 				System.out.println(e.getMessage());
 			}
-			sendToTelegram("Starting", chatId);
+			sendToTelegram("Starting", chatIdCopyTrade);
 
 		}
 		catch (Exception e)
@@ -138,7 +142,7 @@ public class TelegramService {
 
 		if(id == null || id == 0)
 		{
-			id = chatId;
+			id = chatIdCopyTrade;
 		}
 
 		if(id == 0)
@@ -184,8 +188,12 @@ public class TelegramService {
 //				msg = msg + telegramMsg.ip + ":" +telegramMsg.appName + ": ";
 //			}
 //			msg = msg  + telegramMsg.msg + "\n \n";
-			sent(telegramMsg.msg, chatId);
 
+			if(telegramMsg.appName.toLowerCase().contains("copy"))
+				sent(telegramMsg.ip+":"+telegramMsg.appName+":"+telegramMsg.msg, chatIdCopyTrade);
+
+			if(telegramMsg.appName.toLowerCase().contains("fix") || telegramMsg.appName.toLowerCase().contains("order")||telegramMsg.appName.toLowerCase().contains("gw"))
+				sent(telegramMsg.ip+":"+telegramMsg.appName+":"+telegramMsg.msg, chatIdGateway);
 		}
 
 //		if(msg.length() > 0)
@@ -213,11 +221,13 @@ public class TelegramService {
 //							e.printStackTrace();
 //						}
 
-			if(msg.contains("down") || msg.contains("Down"))
-			{
-				chatId = chatIdError;
-			}
+
 			telegramBot.sent(msg, chatId);
+
+			if(msg.contains("down") || msg.contains("Down") || msg.toLowerCase().contains("failed") || msg.toLowerCase().contains("error"))
+			{
+				telegramBot.sent(msg, chatIdError);
+			}
 		}
 		catch (Exception e)
 		{

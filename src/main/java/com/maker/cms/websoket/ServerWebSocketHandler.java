@@ -79,9 +79,9 @@ public class ServerWebSocketHandler extends WebSocketServer {
 
             if(message.contains("CFH Data down"))
             {
-                if(DateUtil.isWeekEnd() == true)
+//                if(DateUtil.isWeekEnd() == true)
                 {
-                    logger.info("ignore weekend");
+//                    logger.info("ignore weekend");
                     return;
                 }
             }
