@@ -155,10 +155,13 @@ public class TelegramService {
 
 		if(telegramMsgs.size() == 0)return;
 
+		List<TelegramMsg> tmp = new ArrayList<>(telegramMsgs);
+		telegramMsgs.clear();
 
-		String msg = "";
 
-		for(TelegramMsg telegramMsg:telegramMsgs)
+//		String msg = "";
+
+		for(TelegramMsg telegramMsg:tmp)
 		{
 
 			if(telegramMsg.msg != null)
@@ -170,24 +173,25 @@ public class TelegramService {
 				}
 			}
 
-			if(msg.length()>3000)
-			{
-				sent(msg, chatId);
-				msg ="";
-			}
-
-			if(telegramMsg.appName != null)
-			{
-				msg = msg + telegramMsg.ip + ":" +telegramMsg.appName + ": ";
-			}
-			msg = msg  + telegramMsg.msg + "\n \n";
+//			if(msg.length()>3000)
+//			{
+//				sent(msg, chatId);
+//				msg ="";
+//			}
+//
+//			if(telegramMsg.appName != null)
+//			{
+//				msg = msg + telegramMsg.ip + ":" +telegramMsg.appName + ": ";
+//			}
+//			msg = msg  + telegramMsg.msg + "\n \n";
+			sent(telegramMsg.msg, chatId);
 
 		}
 
-		if(msg.length() > 0)
-			sent(msg, chatId);
+//		if(msg.length() > 0)
+//			sent(msg, chatId);
 
-		telegramMsgs.clear();
+//		telegramMsgs.clear();
 
 	}
 
