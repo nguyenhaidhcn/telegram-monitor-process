@@ -3,6 +3,7 @@ package com.maker.cms.websoket;
 import com.google.gson.Gson;
 import com.maker.cms.entity.TelegramMsg;
 import com.maker.cms.service.TelegramService;
+import com.maker.cms.utils.DateUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.java_websocket.WebSocket;
@@ -10,10 +11,7 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ServerWebSocketHandler extends WebSocketServer {
 
@@ -78,6 +76,15 @@ public class ServerWebSocketHandler extends WebSocketServer {
 //            }
 //
 //            telegramMsg.appName = telegramMsg.appName + ":" +conn.getRemoteSocketAddress().getHostString();
+
+            if(message.contains("CFH Data down"))
+            {
+                if(DateUtil.isWeekEnd() == true)
+                {
+                    logger.info("ignore weekend");
+                    return;
+                }
+            }
             telegramMsg.ip=conn.getRemoteSocketAddress().getHostString();
             telegramService.telegramMsgs.add(telegramMsg);
 

@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -207,9 +208,28 @@ public class DateUtil {
 		return new Timestamp(time);
 	}
 
+	public static boolean isWeekEnd()
+	{
+		Calendar c = Calendar.getInstance();
+		c.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+		int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+
+		System.out.println(dayOfWeek);
+		if(dayOfWeek == 1 || dayOfWeek == 7)
+			return true;
+		else return false;
+	}
+
 	public static void main(String[] args) {
 //		System.out.println(getMillisFirstDay());
 //		System.out.println(getMillisEndDay());
 //		System.out.println(toString(1545113950000L, PATTERN_MMMDD_HHMMSS));
+
+		Calendar c = Calendar.getInstance();
+		c.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
+		int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+
+		System.out.println(dayOfWeek);
+
 	}
 }

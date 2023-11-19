@@ -12,6 +12,7 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -122,11 +123,13 @@ public class TelegramService {
 			TelegramMsg telegramMsg = mapPingService.get(service);
 			if(telegramMsg == null)
 			{
+				log.info("map ping null");
 				sendToTelegram(service + " down " , null );
 			}
-			else if((telegramMsg.time + timeout*1000) < System.currentTimeMillis())
+			else if((telegramMsg.time + timeout) < System.currentTimeMillis())
 			{
-				sendToTelegram(service + " down " , null );
+//				log.info("last ping: " + new Date(telegramMsg.time));
+//				sendToTelegram(service + " down " , null );
 			}
 		}
 	}
@@ -206,6 +209,10 @@ public class TelegramService {
 //							e.printStackTrace();
 //						}
 
+			if(msg.contains("down") || msg.contains("Down"))
+			{
+				chatId = chatIdError;
+			}
 			telegramBot.sent(msg, chatId);
 		}
 		catch (Exception e)

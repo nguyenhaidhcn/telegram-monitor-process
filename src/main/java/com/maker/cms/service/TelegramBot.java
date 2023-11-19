@@ -201,9 +201,16 @@ public class TelegramBot extends TelegramLongPollingBot  {
                 .setText(msg);
         try {
             execute(message_ugrent); // Sending our message object to user
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+
+
 
     }
 
